@@ -44,6 +44,7 @@ import pprint
 import datetime
 import time
 import csv
+from keys import google_maps_directions_key as key_gmd
 
 # Delete the variable below, and its references, once we go live. Just for easier testing.
 send_texts = True
@@ -105,7 +106,7 @@ def build_api_url(origin, destination, now, ifwaypoints, waypoints=""):
     },
     {
         "parameter": "key",
-        "argument": "AIzaSyCXIqHF9C5CBJrbsHsYBbruIB9TvJ2Ks1M"
+        "argument": key_gmd
     },
     {
         "parameter": "alternatives",    # Only works without intermediate waypoints
