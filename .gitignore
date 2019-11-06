@@ -1,0 +1,11 @@
+__pycache__/
+.vscode/
+archive/
+venv/
+examples/
+text_aws_api/
+test_aws_api/
+assets/
+
+whiteboard_1.py
+requests.csv
