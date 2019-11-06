@@ -1,1 +1,3 @@
 active,phone,country_code,first_name,last_name,commute_direction,origin,destination,waypoints,route_improvement_tolerance_absolute,route_improvement_tolerance_percent,check_start,check_until,check_frequency
+yes,8005551234,1,Daffy,Duck,work_to_home,1234+main+st+indianapolis+in,5678+washington+ave+indianapolis+in,via:39.9173658%2C-86.0285406%7Cvia:39.917571%2C-86.0295506%7Cvia:39.9174979%2C-86.0330099,3,0.1,1700,,5
+yes,8881235555,1,Minnie,Mouse,work_to_home,100+center+blvd+indianapolis+in,200+lincoln+st+indianapolis+in,via:39.9173658%2C-86.0285406%7Cvia:39.917571%2C-86.0295506%7Cvia:39.9174979%2C-86.0330099,3,0.1,1700,,5
