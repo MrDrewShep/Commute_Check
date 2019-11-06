@@ -1,6 +1,6 @@
 This is the first API project built while a boot camp student. Built in my second week of camp, the .py file also includes my future to-do list of possible enhancements.
 
-##Why I Built This:
+## Why I Built This:
 
 I know how to get to and from work. So I don't turn on my navigation. It would be extra work.
 
