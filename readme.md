@@ -1,4 +1,4 @@
-This is the first API project built while a boot camp student. Built in my second week of camp, the .py file also includes my future to-do list of possible enhancements.
+This is the first API project built while a boot camp student. Built in my second week of camp.
 
 ## Why I Built This:
 
