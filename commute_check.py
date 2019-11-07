@@ -6,7 +6,7 @@ import time
 import csv
 from keys import google_maps_directions_key as key_gmd
 
-# Code block below is helpful while still tinking with the app. Eventually can be deleted, once the app runs automatically.
+# Code block below is helpful while still tinkering with the app. Eventually can be deleted, once the app runs automatically.
 send_texts = True
 send_texts = input("Send texts (y/n): ")
 if send_texts == "y":
@@ -101,12 +101,10 @@ def parse_api_response(request):
     i = 1
     legnum = 1
     rte_index = 0
-    # Print summary of legs in the journey
+
     for leg in request["api_response"]["routes"][rte_index]["legs"]:
-        # print(f'Leg {legnum}: {leg["distance"]["text"]} {leg["duration"]["text"]}  (Duration in traffic: {leg["duration_in_traffic"]["text"]}) (<-- Both estimates from metadata)')
         sum_duration_w_traffic += int(leg["duration_in_traffic"]["value"])
         for step in leg["steps"]:
-            # print(f'\t{i} | {step["html_instructions"][0:45]} | {step["distance"]["text"]} {step["duration"]["text"]} | ({step["start_location"]["lat"]},{step["start_location"]["lng"]})')
             i += 1
             total_distance += int(step["distance"]["value"])
             sum_duration += int(step["duration"]["value"])
