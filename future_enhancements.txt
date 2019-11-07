@@ -1,0 +1,28 @@
+# API RESPONSE STRUCTURE FROM GOOGLE MAPS DIRECTIONS...
+# DATA
+# 1 ROUTE (use int index[0])
+# 2 LEG, unless waypoint, then 2+ legs
+# 3 STEPS in each leg
+# 4 Detail for each step
+"""
+FUTURE PROJECT ENHANCEMENTS, TO DO LIST:
+
+- how to get bool to recognize "False" from the csv file as falsey.
+
+- does it need error handling if 1 speciifc request fails from Google, or will it just roll to the next?
+
+- am I looking at UTC or EST times when I send to google  https://developers.google.com/maps/documentation/directions/intro#optional-parameters
+need to add computation for this?
+best package for timezones: pytz?
+
+- migrate from csv to db.
+
+- Website to sign up/google places api to find the google place id for each user's origin and destination
+
+- only 25 waypoints allowed (beyond origin and destination), how to work around?
+remove the smallest mileage segments, with the assumption that will affect the routing the least
+in jacob's case, it might have made a difference though
+test pushing more than 23 waypoints to google
+
+- Geofence to send alert when you leave that address, if between specific hours 
+"""

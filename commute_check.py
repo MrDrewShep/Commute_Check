@@ -1,44 +1,4 @@
-# API RESPONSE STRUCTURE FROM GOOGLE MAPS DIRECTIONS...
-# DATA
-# 1 ROUTE (use int index[0])
-# 2 LEG, unless waypoint, then 2+ legs
-# 3 STEPS in each leg
-# 4 Detail for each step
-"""
-FUTURE PROJECT ENHANCEMENTS, TO DO LIST:
 
-- add docstrings to each function
-
-- how to get bool() to recognize when my string from csv is "FALSE" or "TRUE" or "false" or "true"
-
-- probably need to run it through one user at a time? rather than in batch. that way if a user fails, it's only that user. move onto the next.
-
-- in console, return count of users and progress, etc
-
-- am I looking at UTC or EST times when I send to google  https://developers.google.com/maps/documentation/directions/intro#optional-parameters
-need to add computation for this?
-best package for timezones: pytz?
-
-- save, read, write data to file io
-if i'm saving lists, e.g. list of GPS coords, how to do that in a csv
-save in csv the full string of gps coords together, or keep a list of coords in csv to be remanipulated each time the program runs? (latter makes it easier to removes/edit gps coords, or if google changes how they receive syntax)
-
-- Website to sign up/google places api to find the google place id for each user's origin and destination
-
-- use duration in traffic, but be prepared to handle in the event that data is not available
-
-- only 25 waypoints allowed (beyond origin and destination), how to work around?
-remove the smallest mileage segments, with the assumption that will affect the routing the least
-in jacob's case, it might have made a difference though
-test pushing more than 23 waypoints to google
-
-- Geofence to send alert when you leave that address, if between specific hours 
-
-- (nah, just let them pick out the route on a map) option to "fork Into" and "fork out of" a main vein. e.g. a chuck of i-70 will always be part of my route, so compare for me 2-3 options getting onto 70, then again getting off
-
-- Compare the longest street involved and show the street before and after, all in a 3-road description of the route in general. 
-Eg Capital, 70, Ronald regan 
-"""
 import requests
 import pprint
 import datetime
@@ -46,7 +6,7 @@ import time
 import csv
 from keys import google_maps_directions_key as key_gmd
 
-# Delete the variable below, and its references, once we go live. Just for easier testing.
+# Code block below is helpful while still tinking with the app. Eventually can be deleted, once the app runs automatically.
 send_texts = True
 send_texts = input("Send texts (y/n): ")
 if send_texts == "y":
@@ -54,24 +14,9 @@ if send_texts == "y":
 else:
     send_texts = False
 
-def return_next_week_5pm_in_seconds():
-
-    day_of_week = datetime.datetime.today().weekday()
-
-    if day_of_week in range(0, 5):
-        days_to_add = 7
-    elif day_of_week in [5, 6]:
-        days_to_add = 2
-
-    now = datetime.datetime.now()
-    today_5pm_in_seconds = datetime.datetime(now.year, now.month, now.day, 17, 0, 0).timestamp()
-    seconds_to_add = days_to_add*24*60*60
-    temporary_utc_to_est_conversion = 60*60*4
-    future_5pm = int(today_5pm_in_seconds + seconds_to_add - temporary_utc_to_est_conversion)
-    return str(future_5pm)
-
 
 def convert_secs_to_hr_min_string(seconds):
+    """Google converses in seconds, for departure time and duration of routes. This converts it to a readable format of hours/minutes."""
 
     duration_string = ""
 
@@ -89,7 +34,8 @@ def convert_secs_to_hr_min_string(seconds):
     return duration_string
 
 
-def build_api_url(origin, destination, now, ifwaypoints, waypoints=""):
+def build_api_url(origin, destination, waypoints=""):
+    """Builds the respective URLs, per user, to send to Google and compare responses.""" 
 
     url_base_characteristics = [
     {
@@ -115,6 +61,14 @@ def build_api_url(origin, destination, now, ifwaypoints, waypoints=""):
     {
         "parameter": "mode",
         "argument": "driving"
+    },
+    {
+        "parameter": "departure_time",
+        "argument": "now"
+    },
+    {
+        "parameter": "waypoints",
+        "argument": waypoints
     }
 ]
 
@@ -125,56 +79,17 @@ def build_api_url(origin, destination, now, ifwaypoints, waypoints=""):
         else:
             url += f'&{item["parameter"]}={item["argument"]}'
     
-    if now == True and ifwaypoints == False:
-        url += "&departure_time=now"
-    if now == True and ifwaypoints == True:
-        url += "&departure_time=now" + "&waypoints=" + waypoints
-    if now == False and ifwaypoints == True:
-        url += "&departure_time=" + return_next_week_5pm_in_seconds() + "&waypoints=" + waypoints
     return url
 
 
-def sift_html(html): # Distill the response.html_instructions to get closer to simply the street name
-    writing_tag = False
-    recording = False
-    tag = ""
-    keep_string = ""
-
-    for letter in html:
-        if letter == "<":
-            recording = False
-            writing_tag += 1
-
-        if recording and writing_tag < 1:
-            keep_string += letter
-
-        if letter == ">":
-            tag += letter
-            writing_tag -= 1
-            if tag == "<wbr/>":
-                keep_string += " / "
-            elif tag[0:2] == "</":
-                recording = False
-            else:
-                recording = True
-            tag = ""
-
-        if writing_tag:
-            tag += letter
-
-    return keep_string
-
-
-
 def parse_api_response(request):
+    """Take each Google API JSON response and parse the response for data."""
 
-    # Collect string of lat/lng from the steps in json response
+    # I used this code block the first time a request was sent, to capture the lat/lon waypoints involved in the route. They are manually saved into the requests.csv file as the "usual"/preferred route.
     latlng = ""
     for leg in request["api_response"]["routes"][0]["legs"]:
         for step in leg["steps"]:
             latlng += "via:" + str(step["start_location"]["lat"]) + "%2C" + str(step["start_location"]["lng"]) + "%7C"
-    
-    # Add lat/lng string to dictionary
     request["waypoints"] = latlng
 
 
@@ -206,8 +121,9 @@ def parse_api_response(request):
     request["duration_w_traffic_str"] = duration_w_traffic
     print(f"Total: {round(total_distance/1607, 1)} mi, {duration}, {duration_w_traffic} with traffic")
 
-# this is where you left off.....
+
 def unpack_request_file(file):
+    """Opens the file of users. If opted-in, adds that user to a list of dictionaries. Each dictinoary representing the data from the file, and a future "request" to be made to Google Maps Directions API."""
     
     file = csv.DictReader(file)
 
@@ -217,17 +133,18 @@ def unpack_request_file(file):
 
 
 def add_urls_to_requests(request_list):
+    """For each user-request in the list, adds a dictionary entry which is a list of URLs and a placeholder for their future JSON responses."""
 
     for request in request_list:
-        # Build list of dictionaries, each dictionary a type of requests to google, with metadata and api response
         url_list = []
-        url_list.append({"type": "default", "api_url": build_api_url(request["origin"], request["destination"], True, True, request["waypoints"]), "api_response": "null for now"})
-        url_list.append({"type": "best_available", "api_url": build_api_url(request["origin"], request["destination"], True, False, waypoints=""), "api_response": "null for now"})
-        # url_list.append({"type": "default_typically", "api_url": build_api_url(request["origin"], request["destination"], False, True, request["waypoints"]), "api_response": "null for now"})
+        url_list.append({"type": "default", "api_url": build_api_url(request["origin"], request["destination"], request["waypoints"]), "api_response": None})
+        url_list.append({"type": "best_available", "api_url": build_api_url(request["origin"], request["destination"], waypoints=""), "api_response": None})
         request["url_list"] = url_list
 
 
 def suggest_alt_route(default_seconds, best_available_seconds, delta, phone):
+    """Sends an SMS suggesting the user take an alternate route."""
+
     import send_sms
     default = convert_secs_to_hr_min_string(default_seconds)
     best = convert_secs_to_hr_min_string(best_available_seconds)
@@ -240,6 +157,8 @@ def suggest_alt_route(default_seconds, best_available_seconds, delta, phone):
 
 
 def suggest_usual_route(default_seconds, best_available_seconds, delta, phone, tolerance_seconds):
+    """Sends an SMS suggesting the user take their usual route. Note: This is for testing purposes. Eventually the suggestion of a user's "usual" route would be indicated by a non-notificaiton."""
+
     import send_sms
     default = convert_secs_to_hr_min_string(default_seconds)
     best = convert_secs_to_hr_min_string(best_available_seconds)
@@ -251,6 +170,7 @@ def suggest_usual_route(default_seconds, best_available_seconds, delta, phone, t
     if send_texts:
         send_sms.send_sms(phone, text_body)
 
+# Starts a list of user-requests. Each of which will follow with multiple calls to Google Maps Directions for comparison and analysis.
 request_list = []
 with open("requests.csv", "r") as f:
     user_data = f.readlines()
@@ -258,24 +178,18 @@ with open("requests.csv", "r") as f:
 unpack_request_file(user_data)
 add_urls_to_requests(request_list)
 
-
-# Ping Google for each routing scenario, save responses to respective dictionaries
-# refactor this
+# For each user request, for each type of request for comparison, call Google for each routing scenario, save responses to respective dictionaries.
 for request in request_list:
     for request in request["url_list"]:
         response = requests.get(request["api_url"])
-        # Add error handling to the get request above
-        request["api_response"] = response.json()       #? Does this make the request a 2nd time?
-        time.sleep(0)           # Just had this to prevent a bad loop sending zillions of requests to google
+        request["api_response"] = response.json()
 
-
-# Send each json response for parsing and appending to 
+# Send each JSON response for parsing.
 for request in request_list:
-    for i, request in enumerate(request["url_list"]):
-        parse_api_response(request)
+    for route_type in request["url_list"]:
+        parse_api_response(route_type)
 
-# pprint.pprint(request_list[0])
-
+# For each user-request, determine whether a best-available route improves the usual route beyond the user's defined threshold. Sends SMS if necessary.
 for request in request_list:
     phone = "+1" + request["phone"]
     tolerance_min = int(request["route_improvement_tolerance_absolute"])
