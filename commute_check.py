@@ -126,7 +126,7 @@ def unpack_request_file(file):
     file = csv.DictReader(file)
 
     for i in file:
-        if i["active"]:
+        if bool(int(i["active"])):
             request_list.append(i)
 
 

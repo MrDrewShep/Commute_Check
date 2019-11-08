@@ -7,8 +7,6 @@
 """
 FUTURE PROJECT ENHANCEMENTS, TO DO LIST:
 
-- how to get bool to recognize "False" from the csv file as falsey.
-
 - does it need error handling if 1 speciifc request fails from Google, or will it just roll to the next?
 
 - am I looking at UTC or EST times when I send to google  https://developers.google.com/maps/documentation/directions/intro#optional-parameters
